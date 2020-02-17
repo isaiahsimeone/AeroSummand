@@ -5,14 +5,17 @@ import time
 import datetime
 import calendar
 
+### Settings - only Mondays For Start/End Date ###
+START_DATE  = "2017-01-16" 
+END_DATE    = "2020-02-17"  
+EMP_NAME    = ""
+EMP_IDENT   = ""
+
+WD_PATH     = "/usr/local/bin/chromedriver"
+
 ### Credentials ###
 USERNAME    = ""
 PASSWORD    = ""
-
-### Settings - only Mondays For Start Date ###
-START_DATE  = "2017-01-16" 
-END_DATE    = "2020-02-10" 
-WD_PATH     = "/usr/local/bin/chromedriver"
 
 shifts = []
 
@@ -27,8 +30,10 @@ def getRoster(week):
     # Inject week value into 3rd index of dropdown
     driver.execute_script("document.getElementsByName('Week')[0][2].value = '" + str(week) + "';")
     # Select injected option
-    driver.find_elements_by_xpath("/html/body/div[1]/div/div/div[2]/form/table/tbody/tr/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr/td[4]/select/option[3]")[0].click()                                 
-    # Show roster for injected week
+    driver.find_elements_by_xpath("/html/body/div[1]/div/div/div[2]/form/table/tbody/tr/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr/td[4]/select/option[3]")[0].click()
+    # Select desired employee
+    setEmployee()
+    # Show roster for injected week and employee
     driver.find_elements_by_xpath("/html/body/div[1]/div/div/div[2]/form/table/tbody/tr/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr/td[5]/input")[0].click()
 
     rosterElem = driver.find_elements_by_xpath("/html/body/div[1]/div/div/div[2]/form/table/tbody/tr/td[2]/table/tbody/tr[4]/td/table/tbody/tr/td/table/tbody/tr/td/table")[0].get_attribute("innerHTML")
@@ -83,6 +88,11 @@ def getNextWeek(previousWeek):
 
     return str(yearString + "-" + monthString + "-" + dayString)
 
+def setEmployee():
+    # Set 2nd index to value of EMP_IDENT
+    driver.execute_script("document.getElementsByName('emp')[0][1].value = '" + EMP_IDENT + "';")
+    # Select injected option for the employee (2nd index)
+    driver.find_elements_by_xpath("/html/body/div[1]/div/div/div[2]/form/table/tbody/tr/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr/td[2]/select/option[2]")[0].click()
 
 def getWeekDelta():
     day1     = int(START_DATE[-2:])
@@ -95,7 +105,7 @@ def getWeekDelta():
 
     d1 = date(year1, month1, day1)
     d2 = date(year2, month2, day2)
-    return (d2-d1).days // 7
+    return (d2 - d1).days // 7
 
 #############################
 ###                  Get Data
@@ -115,7 +125,7 @@ weekCount = getWeekDelta()
 currentWeek = START_DATE
 for i in range(0, weekCount):
     time.sleep(0.01)
-    print(str((i+1)/weekCount * 100) + "% Complete")
+    print(str(round((i+1)/weekCount * 100, 3)) + "% Complete")
     shifts += getRoster(currentWeek)
     currentWeek = getNextWeek(currentWeek)
 
@@ -128,7 +138,7 @@ observedShiftAreas = []
 
 for i in range(0, len(shifts)):
     if shifts[i][5] not in observedShiftAreas:
-	    observedShiftAreas.append(shifts[i][5])
+        observedShiftAreas.append(shifts[i][5])
 
 ### Get Number of Shift Occurrences ###
 shiftOccurrences = [0] * len(shifts)
@@ -142,15 +152,18 @@ shiftTimings = [0] * len(shifts)
 
 for i in range(0, len(shifts)):
     index = observedShiftAreas.index(shifts[i][5])
-    if shifts[i][4] not in ["---", "Leave "]:
+    if shifts[i][4] not in ["---"]:
         shiftTimings[index] += float(shifts[i][4])
 
-### Display Results ###   
-print("\n"*3)
-print(USERNAME+'{:>20}  {:>8}  {:>10}'.format("ROSTERED AREA", "OCCURRENCES", "TOT. HOURS"))
-print("-"*55)
+#############################
+###              Display Data
+#############################  
+print("\n" * 3)
+print(EMP_NAME + " - "+ START_DATE + " to " + END_DATE)
+print('{:>22}  {:>8}  {:>11}'.format("ROSTERED AREA", "OCCURRENCES", "TOT. HOURS"))
+print("-" * 55)
 for i in range(0, len(observedShiftAreas)):
-    line_new = '{:>22}  {:>8}  {:>10}'.format(str(observedShiftAreas[i]), str(shiftOccurrences[i]), str(round(shiftTimings[i], 1)))
+    line_new = '{:>22}  {:>8}  {:>11}'.format(str(observedShiftAreas[i]), str(shiftOccurrences[i]), str(round(shiftTimings[i], 1)))
     print(line_new)
     
 print("-"*55)
