@@ -23,6 +23,13 @@ driver = webdriver.Chrome(WD_PATH)
 ###                 Functions
 #############################
 
+"""
+Returns shifts for a specified week
+Args:
+    week {String}: The week to retrieve employee shifts for.
+Returns:
+    {Object}: A 2D array containing shift data 
+"""
 def getRoster(week):
     # Inject week value into 3rd index of dropdown
     driver.execute_script("document.getElementsByName('Week')[0][2].value = '" + str(week) + "';")
@@ -44,7 +51,13 @@ def getRoster(week):
     weekShifts.pop(-1) # delete total hours row
     return weekShifts
 
-    
+"""
+Returns the date of the same day next week in AeroNet suitable format.
+Args:
+    previousWeek {String}: The date of the previous week in AeroNet suitable format.
+Returns:
+    {String} : The date of the same day following the previousWeek (in suitable format)
+"""    
 def getNextWeek(previousWeek):
     day     = int(previousWeek[-2:])
     month   = int(previousWeek[5:7])
@@ -83,7 +96,11 @@ def getNextWeek(previousWeek):
 
     return str(yearString + "-" + monthString + "-" + dayString)
 
-
+"""
+Returns the number of weeks between START_DATE and END_DATE
+Returns:
+    {Int} : number of weeks difference between START_DATE and END_DATE 
+"""
 def getWeekDelta():
     day1     = int(START_DATE[-2:])
     month1   = int(START_DATE[5:7])
@@ -145,12 +162,15 @@ for i in range(0, len(shifts)):
     if shifts[i][4] not in ["---", "Leave "]:
         shiftTimings[index] += float(shifts[i][4])
 
-### Display Results ###   
-print("\n"*3)
-print(USERNAME+'{:>20}  {:>8}  {:>10}'.format("ROSTERED AREA", "OCCURRENCES", "TOT. HOURS"))
-print("-"*55)
+#############################
+###              Display Data
+#############################  
+print("\n" * 3)
+print(USERNAME + " - "+ START_DATE + " to " + END_DATE)
+print('{:>22}  {:>8}  {:>11}'.format("ROSTERED AREA", "OCCURRENCES", "TOT. HOURS"))
+print("-" * 55)
 for i in range(0, len(observedShiftAreas)):
-    line_new = '{:>22}  {:>8}  {:>10}'.format(str(observedShiftAreas[i]), str(shiftOccurrences[i]), str(round(shiftTimings[i], 1)))
+    line_new = '{:>22}  {:>8}  {:>11}'.format(str(observedShiftAreas[i]), str(shiftOccurrences[i]), str(round(shiftTimings[i], 1)))
     print(line_new)
     
 print("-"*55)
