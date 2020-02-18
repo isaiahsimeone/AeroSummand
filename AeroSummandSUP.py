@@ -26,6 +26,13 @@ driver = webdriver.Chrome(WD_PATH)
 ###                 Functions
 #############################
 
+"""
+Returns shifts for a specified week
+Args:
+    week {String}: The week to retrieve employee shifts for.
+Returns:
+    {Object}: A 2D array containing shift data 
+"""
 def getRoster(week):
     # Inject week value into 3rd index of dropdown
     driver.execute_script("document.getElementsByName('Week')[0][2].value = '" + str(week) + "';")
@@ -49,7 +56,13 @@ def getRoster(week):
     weekShifts.pop(-1) # delete total hours row
     return weekShifts
 
-    
+"""
+Returns the date of the same day next week in AeroNet suitable format.
+Args:
+    previousWeek {String}: The date of the previous week in AeroNet suitable format.
+Returns:
+    {String} : The date of the same day following the previousWeek (in suitable format)
+"""       
 def getNextWeek(previousWeek):
     day     = int(previousWeek[-2:])
     month   = int(previousWeek[5:7])
@@ -88,12 +101,20 @@ def getNextWeek(previousWeek):
 
     return str(yearString + "-" + monthString + "-" + dayString)
 
+"""
+Selects the employee specified in the EMP_IDENT field and manipulates the DOM accordingly
+"""
 def setEmployee():
     # Set 2nd index to value of EMP_IDENT
     driver.execute_script("document.getElementsByName('emp')[0][1].value = '" + EMP_IDENT + "';")
     # Select injected option for the employee (2nd index)
     driver.find_elements_by_xpath("/html/body/div[1]/div/div/div[2]/form/table/tbody/tr/td[2]/table/tbody/tr[2]/td/table/tbody/tr/td/table/tbody/tr/td[2]/select/option[2]")[0].click()
 
+"""
+Returns the number of weeks between START_DATE and END_DATE
+Returns:
+    {Int} : number of weeks difference between START_DATE and END_DATE 
+"""
 def getWeekDelta():
     day1     = int(START_DATE[-2:])
     month1   = int(START_DATE[5:7])
